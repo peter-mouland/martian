@@ -5,17 +5,13 @@
 export class Robot {
     /**
      * @typedef {string<"N" | "S" | "W" | "E">} Direction
-     */
-
     /**
      * @typedef {array<number, number>} Coords
      * @description [x, y]
-     */
     /**
      * @typedef {string<"R"|"L">} Turn
+    /**
      * @typedef {string<"F">} Movement
-     */
-
     /**
      * Enum for state values.
      * @readonly

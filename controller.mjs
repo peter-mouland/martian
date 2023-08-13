@@ -25,9 +25,13 @@ export class Controller {
     }
 
     report() {
+        const report = []
         this.robots.forEach((robot) => {
-            console.log(robot.getLastKnownLocation(), robot.getDirection(), robot.getStatus())
+            const item = `${robot.getLastKnownLocation().join(' ')} ${robot.getDirection()} ${robot.getStatus()}`
+            report.push(item.trim())
         })
+        console.log(report.join('\n'))
+        return report.join('\n')
     }
 
 

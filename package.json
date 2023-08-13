@@ -1,0 +1,12 @@
+{
+  "name": "daphne-robots",
+  "version": "1.0.0",
+  "description": "A program that determines each sequence of robot positions and reports the final position of the robot.",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node ./index.mjs",
+    "test": "node --test *.spec.mjs"
+  },
+  "author": "Peter Mouland",
+  "license": "ISC"
+}

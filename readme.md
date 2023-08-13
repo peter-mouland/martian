@@ -1,4 +1,12 @@
 # Martian Robots
+
+## Running
+
+- testing: `npm test`
+- run: `npm start`
+
+_[Developer Notes](#developer-notes)_
+
 ## The Problem
 
 The surface of Mars can be modeled by a rectangular grid around which robots are able to move according to instructions provided from Earth. You are to write a program that determines each sequence of robot positions and reports the final position of the robot.
@@ -48,3 +56,24 @@ LLFFFLFLFL
 3 3 N LOST
 2 3 S
 ```
+
+# Developer Notes
+
+- Approach:
+  - We have three classes, Robot, Grids and Controllers.
+    - Robots and Grids do not know about each other
+    - A Controller is used to instruct the Robot, and validate the result against the Grid
+  - a Robot can only be on one grid
+  - a Grid can contain many robots
+  - benefits: clearer bounds of responsibilities, controller is extensible
+    - e.g. could enable robot-to-robot comm's to recover lost souls
+- Language:
+  - Kept with NodeJS for simplicity
+  - used Type annotations (i.e. https://jsdoc.app/) for typings
+  - _should have just used typescript!_
+- Sending instructions:
+  - currently done via index.mjs, but could be adapted to read in a file
+- Testing:
+  - tests has been added for robot, and a single integration for controller
+  - before going to prod, more tests should be added to cover the grid and the controller, especially the 'scent' feature
+  - NodeJS test library has been used for simplicity
