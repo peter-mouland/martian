@@ -1,25 +1,25 @@
 /*
   class Robot
   purpose: to be able to take direction and move a long 2-dimensional grid
-  note: must be able to detect 'scent' of lost robots from the grid it is on
- */
+*/
 export class Robot {
     /**
-     * @typedef {String<'N' | 'S' | 'W' | 'E'>} Direction
+     * @typedef {string<"N" | "S" | "W" | "E">} Direction
      */
 
     /**
-     * @typedef {Array<number, number>} Coords
+     * @typedef {array<number, number>} Coords
      * @description [x, y]
      */
     /**
-     * @typedef {String<'R'|'L'|'F'>} Instruction
+     * @typedef {string<"R"|"L">} Turn
+     * @typedef {string<"F">} Movement
      */
 
     /**
      * Enum for state values.
      * @readonly
-     * @enum {String}
+     * @enum {string}
      */
     DirectionDeg = {
         N: 0,
@@ -43,19 +43,17 @@ export class Robot {
      * @enum {string}
      */
     Status = {
-        lost: 'lost',
-        onMission: 'on-mission',
+        lost: "lost",
+        onMission: "on-mission",
     };
 
     /**
      * @param start { Coords }
      * @param direction { Direction }
-     * @param grid { Grid }
      * @param options { {debug: boolean }}
      * @returns void
      */
-    constructor(start, direction, grid, options = {}){
-
+    constructor(start, direction, options = {}){
         /**
          * @type array<Coords>
          */
@@ -63,68 +61,59 @@ export class Robot {
         this.directionDeg = this.DirectionDeg[direction];
         this.debug = options.debug
         this.status = this.Status.onMission; // store robot status. key: Robot; value: 'on-mission' | 'lost'
-        this.grid = grid
-        this.grid.addOccupant(this, start);
     }
 
     /**
-     * @param coords { Coords }
+     * @description calculate new coords after given movement
+     *  _note:  this assumes knowledge of the current grid. hmm_
+     * @param movement { Movement }
      * @returns Coords
      */
-    calculateNewCoords([x, y]) {
-        switch (true) {
-            case this.directionDeg===0: return [x, y+1];
-            case this.directionDeg===180: return [x, y-1];
-            case this.directionDeg===90: return [x+1, y];
-            case this.directionDeg===270: return [x-1, y];
+    calculateNewCoords(movement) {
+        const [x, y] = this.getLocation();
+        if (movement === 'F') {
+            switch (true) {
+                case this.directionDeg===0: return [x, y+1];
+                case this.directionDeg===180: return [x, y-1];
+                case this.directionDeg===90: return [x+1, y];
+                case this.directionDeg===270: return [x-1, y];
+                default: return [x, y];
+            }
         }
     }
+
     /**
-     * @param instruction { Instruction }
+     * @param instruction { Turn }
      */
     turn(instruction) {
-        if (this.isLost()) return false;
+        if (this.isLost()) return false;  // return false to indicate no signal
         let newPosition = (this.directionDeg + this.TurnDeg[instruction])  % 360 // cope with large turns
         if (newPosition < 0) newPosition = 360 + newPosition
         this.directionDeg = newPosition;
         return true;
     }
+
     /**
-     * @param instruction { Instruction }
+     * @param instruction { Turn | Movement }
+     * @param validator { function }
      */
-    moveOnce(instruction) {
-        if (this.isLost()) return false;
+    move(instruction, validator = () => true) {
+        if (this.isLost()) return false; // return false to indicate no signal
         if (this.debug){
-            console.log('moveOnce from ' + this.reportLocation(), 'facing (' +this.directionDeg+')' + this.reportDirection(), this.reportStatus(), 'to ' + instruction)
+            console.log('moveOnce from ' + this.getLocation(), 'facing (' +this.directionDeg+')' + this.getDirection(), this.getStatus(), 'to ' + instruction)
         }
         if (instruction === 'L' || instruction === 'R'){
-            return this.turn(instruction)
+            this.turn(instruction)
+        } else {
+            const to = this.calculateNewCoords(instruction);
+            if (validator(this.getLocation(), to)) {
+                this.path.push(to);
+            } else {
+                return false
+            }
         }
+        return true
 
-        const from = this.path.at(-1);
-        const to = this.calculateNewCoords(from);
-        const hasScent = this.grid.hasScent(from, to);
-        if (hasScent) {
-            if (this.debug) console.log('instruction ignored. previous occupant lost')
-            return false; // if movement is same as previously lost occupant, don't do it
-        }
-
-        const moved = this.grid.moveOccupant(from, to);
-        if (moved && this.grid.isOffGrid(to)) {
-            this.setIsLost();
-        } else if (moved) {
-            this.path.push(to);
-        }
-        return moved;
-    }
-
-    /**
-     * @param instructions { array<Instruction> }
-     */
-    move(instructions) {
-        for (let i = 0; i<instructions.length; i++){
-            this.moveOnce(instructions[i]);
-        }
     }
 
     /**
@@ -138,16 +127,16 @@ export class Robot {
      */
     isLost() {
         return this.status === this.Status.lost;
-
     }
 
-    reportLocation() {
+    getLocation() {
         return this.path.at(-1);
     }
-    reportPath() {
-        return this.path;
+    getLastKnownLocation() {
+        return this.isLost() ? this.path.at(-2) : this.path.at(-1);
     }
-    reportDirection() {
+
+    getDirection() {
         switch (true) {
             // ripe for improvement
             case this.directionDeg===0: return 'N'
@@ -156,7 +145,7 @@ export class Robot {
             case this.directionDeg===270: return 'W'
         }
     }
-    reportStatus() {
+    getStatus() {
         return this.isLost() ? 'LOST' : ''
     }
 }

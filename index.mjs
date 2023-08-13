@@ -15,11 +15,10 @@ LLFFFLFLFL
 
 const input = convert(exampleInput);
 
-const controller = new Controller({ debug: false })
-controller.initGrid(input.gridSize)
-input.robots.forEach((robot) => {
-    const robot1 = controller.addRobot(robot)
-    robot1.move(robot.instructions)
+const controller = new Controller(input.gridSize, { debug: false });
+input.robots.forEach((r) => {
+    const robot = controller.addRobot(r);
+    controller.move(robot, r.instructions);
 })
 
 controller.report()
